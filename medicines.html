@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+        <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+        <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    </head>
+
+    <body>
+        <nav class="navbar navbar-inverse" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="index.html">病人管理</a>
+                </div>
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="medicines.html">药品管理</a>
+                </div>
+            </div>
+        </nav>
+
+        <h1>药品存量</h1>
+
+        <div id="vm_medicines">
+            <input v-model="filter_name" class="form-control" placeholder="搜索药品：">
+
+            <hr/>
+
+            <table class="form" role="form" cellspacing="100">
+                <tr v-for="medicine in filter(medicines, filter_name)" :key="medicine.name" class="form-group">
+                    <td> <label>{{ medicine.name }}：</label> </td>
+                    <td> 剩余 {{ medicine.count }} 个 </td>
+                    <td> <button class="btn btn-default" v-on:click="medicine.count -= medicine.count > 10 ? 10 : medicine.count; persist()"> 减 10 个 </button> </td>
+                    <td> <button class="btn btn-default" v-on:click="medicine.count -= medicine.count > 0 ? 1 : 0; persist()"> 减 1 个 </button> </td>
+                    <td> <button class="btn btn-default" v-on:click="medicine.count += 1; persist()"> 加 1 个 </button> </td>
+                    <td> <button class="btn btn-default" v-on:click="medicine.count += 10; persist()"> 加 10 个 </button> </td>
+                    <td> <button class="btn btn-danger" v-on:click="delete_medicine(medicine.name)"> 删除 </button> </td>
+                </tr>
+            </table>
+            <div class="form-inline">
+                <div class="form-group">
+                    <input class="form-control" v-model="new_medicine_name"></input>
+                    <button class="btn btn-default" v-on:click="add_medicine(); persist()">添加新药</button>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    <script>
+     fs = require('fs')
+     function read_file(path) {
+         return fs.readFileSync(path, 'utf8');
+     }
+     function write_file(path, output) {
+         fs.writeFileSync(path, output);
+     }
+
+     try {
+         medicines = JSON.parse(read_file('medicines.json'))
+     } catch(e) {
+         medicines = [];
+     }
+
+     var vm_medicines = new Vue({
+         el: "#vm_medicines",
+         data: {
+             medicines: medicines,
+             filter_name: "",
+             add_medicine: function() {
+                 if (this.new_medicine_name == "") {
+                     alert("药品名字不能为空！")
+                     return 1
+                 }
+                 if (medicines.map(medicine => medicine.name).includes(this.new_medicine_name)) {
+                     alert("药品姓名重复！建议在姓名里加点其他信息（比如药厂？）")
+                     return 1
+                 }
+                 this.medicines.push(
+                     {name: this.new_medicine_name, count: 0}
+                 )
+                 this.new_medicine_name = ""
+             },
+             delete_medicine: function(name) {
+                 if (confirm("确认删除这个药品吗？")) {
+                     index = this.medicines.findIndex(medicine => medicine.name == name)
+                     if (index > -1) {
+                         this.medicines.splice(index, 1)
+                         alert("删除成功！")
+                     } else {
+                         alert("删除失败！")
+                     }
+                 }
+             },
+             filter: function(medicines, filter_name) {
+                 return medicines.filter(medicine => medicine.name.includes(filter_name))
+             },
+             new_medicine_name: "",
+             persist: function() {
+                 write_file('medicines.json', JSON.stringify(medicines))
+             }
+
+         }
+     })
+
+    </script>
+
+</html>

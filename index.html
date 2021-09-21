@@ -1,0 +1,343 @@
+<html>
+    <head>
+        <script> window.jQuery = window.$ = require('jquery'); </script>
+        <!-- <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script> -->
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script scr="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+        <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    </head>
+
+    <body>
+        <nav class="navbar navbar-inverse" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="index.html">病人管理</a>
+                </div>
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="medicines.html">药品管理</a>
+                </div>
+            </div>
+        </nav>
+
+        <h1>病人病历</h1>
+        <div id="vm_patients">
+            <div>
+                <div class="form-inline" role="form">
+                    <div class="form-group">
+                        <label class="sr-only">姓名：</label>
+                        <input v-model="new_patient_name" class="form-control">
+                        <button class="btn btn-default" v-on:click="add_patient()">添加病人</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <hr/>
+
+            <ul class="nav nav-tabs">
+                <li>
+                    <input v-model="filter_name" class="form-control" placeholder="搜索病人：">
+                </li>
+                <li v-for="[index, patient] in filter(patients, filter_name).entries()" :class="index == 0 ? 'active' : 'inactive'">
+                    <a v-bind:href="'#' + patient.name" data-toggle="tab">
+                        {{patient.name}}
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div :class="'tab-pane fade' + (index == 0 ? ' in active' : '')" v-for="[index, patient] in filter(patients, filter_name).entries()" :key="patient.name" v-bind:id="patient.name">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">电话</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" v-model="patient.phone">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">家庭住址</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" v-model="patient.address">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr/>
+
+                    <h3>基本情况</h3>
+                    <div class="form-horizontal">
+                        <label class="col-sm-2 control-label">主诉</label>
+                        <div class="col-sm-10"><input class="form-control" v-model="patient.basic_info.demand"></div>
+
+                        <label class="col-sm-2 control-label">孕产情况</label>
+                        <div class="col-sm-10"><input class="form-control" v-model="patient.basic_info.pregnant"></div>
+
+                        <label class="col-sm-2 control-label">月经初潮年龄</label>
+                        <div class="col-sm-10"><input class="form-control" v-model="patient.basic_info.menarche"></div>
+
+                        <label class="col-sm-2 control-label">有无流产史 </label>
+                        <div>
+                            <div class="col-sm-10">
+                                <label class="radio-inline">
+                                    <input type="radio" value="有" v-model="patient.basic_info.abortion"> 有
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" value="无" v-model="patient.basic_info.abortion"> 无
+                                </label>
+                            </div>
+                        </div>
+
+                        <label class="col-sm-2 control-label">面色</label>
+                        <div class="col-sm-10"><input class="form-control" v-model="patient.basic_info.face"></div>
+
+                        <label class="col-sm-2 control-label">四肢畏寒或畏热</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" value="无" v-model="patient.basic_info.limbs"> 无
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="畏寒" v-model="patient.basic_info.limbs"> 畏寒
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="畏热" v-model="patient.basic_info.limbs"> 畏热
+                            </label>
+                        </div>
+
+                        <label class="col-sm-2 control-label">行经乳房胀痛</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" value="是" v-model="patient.basic_info.breast_ache"> 是
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="否" v-model="patient.basic_info.breast_ache"> 否
+                            </label>
+                        </div>
+
+                        <label class="col-sm-2 control-label">月经量</label>
+                        <div class="col-sm-10"><input class="form-control" v-model="patient.basic_info.period_amount"></div>
+
+                        <label class="col-sm-2 control-label">周期</label>
+                        <div class="col-sm-10"><input class="form-control" v-model="patient.basic_info.period"></div>
+
+                        <label class="col-sm-2 control-label">月经颜色</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" value="淡红" v-model="patient.basic_info.period_color"> 淡红
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="黑红" v-model="patient.basic_info.period_color"> 黑红
+                            </label>
+                        </div>
+
+                        <label class="col-sm-2 control-label">经血质地</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" value="有血块" v-model="patient.basic_info.period_texture"> 有血块
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="无血块" v-model="patient.basic_info.period_texture"> 无血块
+                            </label>
+                        </div>
+
+                        <label class="col-sm-2 control-label">痛经情况</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" value="无" v-model="patient.basic_info.period_pain"> 无
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="经前痛" v-model="patient.basic_info.period_pain"> 经前痛
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="行经痛" v-model="patient.basic_info.period_pain"> 行经痛
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="经后痛" v-model="patient.basic_info.period_pain"> 经后痛
+                            </label>
+                        </div>
+
+                        <label class="col-sm-2 control-label">行经腰酸困</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" value="是" v-model="patient.basic_info.period_sore"> 是
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="否" v-model="patient.basic_info.period_sore"> 否
+                            </label>
+                        </div>
+
+                        <label class="col-sm-2 control-label">平时腰膝酸软</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" value="是" v-model="patient.basic_info.sore"> 是
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="否" v-model="patient.basic_info.sore"> 否
+                            </label>
+                        </div>
+
+                        <label class="col-sm-2 control-label">便秘</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" value="是" v-model="patient.basic_info.constipation"> 是
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="否" v-model="patient.basic_info.constipation"> 否
+                            </label>
+                        </div>
+
+                        <label class="col-sm-2 control-label">小便颜色</label>
+                        <div class="col-sm-10"><input class="form-control" v-model="patient.basic_info.urine"></div>
+
+                        <label class="col-sm-2 control-label">饮食情况</label>
+                        <div class="col-sm-10"><input class="form-control" v-model="patient.basic_info.diet"></div>
+
+                        <label class="col-sm-2 control-label">睡眠质量</label>
+                        <div class="col-sm-10"><input class="form-control" v-model="patient.basic_info.sleep"></div>
+
+                        <label class="col-sm-2 control-label">舌苔</label>
+                        <div class="col-sm-10"><input class="form-control" v-model="patient.basic_info.tongue"></div>
+
+                        <label class="col-sm-2 control-label">白带颜色</label>
+                        <div class="col-sm-10">
+                            <label class="radio-inline">
+                                <input type="radio" value="白" v-model="patient.basic_info.leucorrhea"> 白
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" value="黄" v-model="patient.basic_info.leucorrhea"> 黄
+                            </label>
+                        </div>
+
+                        <label class="col-sm-2 control-label">备注</label>
+                        <div class="col-sm-10"> <textarea class="form-control" v-model="patient.basic_info.note"> </textarea> </div>
+
+                    </div>
+
+                    <hr/>
+
+                    <h3>妇检情况：</h3>
+                    <textarea class="form-control" v-model="patient.gynecological_info" rows="10"> </textarea>
+
+                    <hr/>
+
+                    <h3>诊断情况：</h3>
+                    <textarea class="form-control" v-model="patient.diagnosis_info" rows="10"> </textarea>
+
+                    <hr/>
+
+                    <h3>治疗方案：</h3>
+                    <textarea class="form-control" v-model="patient.treatment" rows="10"> </textarea>
+
+                    <hr/>
+
+                    <h3>治疗：</h3>
+                    <textarea class="form-control" v-model="patient.history" rows="10"> </textarea>
+
+                    <hr/>
+
+                    <button class="btn btn-default" v-on:click="persist()">保存</button>
+                    <button class="btn btn-danger" v-on:click="delete_patient(patient.name)">删除病人</button>
+                </div>
+            </div>
+
+        </div>
+    </body>
+
+    <script>
+     fs = require('fs')
+     function read_file(path) {
+         return fs.readFileSync(path, 'utf8');
+     }
+     function write_file(path, output) {
+         fs.writeFileSync(path, output);
+     }
+
+     try {
+         patients = JSON.parse(read_file('patients.json'))
+     } catch(e) {
+         patients = [];
+     }
+
+     function Patient(name) {
+         this.name = name
+         this.phone = ""
+         this.address = ""
+         this.basic_info = {
+             abortion: "",
+             breast_ache: "",
+             constipation: "",
+             demand: "",
+             diet: "",
+             face: "",
+             leucorrhea: "",
+             limbs: "",
+             menarche: "",
+             menstruation: "",
+             period: "",
+             period_amount: "",
+             period_color: "",
+             period_pain: "",
+             period_sore: "",
+             period_texture: "",
+             pregnant: "",
+             sleep: "",
+             sore: "",
+             tongue: "",
+             urine: "",
+         },
+         this.gynecological_info = "",
+         this.diagnosis_info = "中医诊断：\n西医诊断：",
+         this.treatment = "1.口服中成药\n2.西医治疗\n3.艾灸疗法\n4.穴位注射疗法\n5.刺血疗法\n6.免疫制剂疗法\n7.导灸疗法\n8.红光治疗仪\n9.微波治疗仪\n10.产康修复仪",
+         this.history = ""
+         return this
+     }
+
+     var vm_patients = new Vue({
+         el: "#vm_patients",
+         data: {
+             patients: patients,
+             new_patient_name: "",
+             filter_name: "",
+             add_patient: function() {
+                 if (this.new_patient_name == "") {
+                     alert("病人名字不能为空！")
+                     return 1
+                 }
+                 if (patients.map(patient => patient.name).includes(this.new_patient_name)) {
+                     alert("病人姓名重复！建议在姓名里加点其他信息（比如病人来自哪个小区？）")
+                     return 1
+                 }
+                 this.patients.push(new Patient(this.new_patient_name))
+                 this.new_patient_name = ""
+             },
+             delete_patient: function(name) {
+                 if (confirm("确认删除这个病人吗？")) {
+                     index = this.patients.findIndex(patient => patient.name == name)
+                     if (index > -1) {
+                         this.patients.splice(index, 1)
+                         alert("删除成功！")
+                     } else {
+                         alert("删除失败！")
+                     }
+                 }
+             },
+             filter: function(patients, filter_name) {
+                 return patients.filter(patient => patient.name.includes(filter_name))
+             },
+             persist: function() {
+                 write_file('patients.json', JSON.stringify(patients))
+             }
+         }
+     })
+
+     var electron = require('electron')
+
+     function persist() {
+         write_file('patients.json', JSON.stringify(patients))
+     }
+     setInterval(persist, 5000);
+
+    </script>
+
+</html>
