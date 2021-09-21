@@ -1,3 +1,4 @@
+// This is a comment for the course ADVANCED SOFTWARE ENGINEERING hw0
 // Modules to control application life and create native browser window
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
